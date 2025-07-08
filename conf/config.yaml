@@ -8,20 +8,19 @@ model:
   _target_: models.MNISTClassifier # Input your custom model
   output_size: 10 # Input your model's output size (only classification)
 
+xai_enabled: disabled
 dataset:
     name: 'MNIST' # Input your data name
     validation_split: 0.2 # Ratio of dividing train data by validation
 
-
 # client
-task_id: 'samd' # Input your Task Name that you register in FedOps Website
+task_id: 'podname' # Input your Task Name that you register in FedOps Website
 
 wandb: 
-  use: true # Whether to use wandb
+  use: false # Whether to use wandb
   key: 'your wandb api key' # Input your wandb api key
   account: 'your wandb account' # Input your wandb account
   project: '${dataset.name}_${task_id}'
-
 
 # server
 num_epochs: 1 # number of local epochs
@@ -31,9 +30,15 @@ clients_per_round: 1 # Number of clients participating in the round
 
 server:
   strategy:
-    _target_: flwr.server.strategy.FedAvg # aggregation algorithm (defalut: fedavg)
-    fraction_fit: 0.00001 # because we want the number of clients to sample on each round to be solely defined by min_fit_clients
-    fraction_evaluate: 0.000001 # because we want the number of clients to sample on each round to be solely defined by min_fit_clients
+    _target_: flwr.server.strategy.FedYogi # aggregation algorithm
+    beta_1: 0.9
+    beta_2: 0.999
+    epsilon: 1e-8
     min_fit_clients: ${clients_per_round} # Minimum number of clients to participate in training
     min_available_clients: ${clients_per_round} # Minimum number of clients to participate in a round
     min_evaluate_clients: ${clients_per_round} # Minimum number of clients to participate in evaluation
+
+# Additional configurations
+data_type: 'Image'
+client_type: 'Silo(PC)'
+server_repo_addr: ''
